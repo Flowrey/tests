@@ -10,11 +10,23 @@ module Youtube
     , PrimaryContents
     , InitContents
     , InitData
+    , getSearchResults
+    , getYouTubeInitialData
     )
     where
 
 import Data.Aeson
 import GHC.Generics
+
+import Network.HTTP.Client
+import Network.HTTP.Client.TLS
+import Network.HTTP.Types.Header (Header, hUserAgent)
+
+import qualified Data.ByteString.Lazy as BSL
+import Data.ByteString.Char8 as C8 (pack, ByteString)
+
+import Text.Regex.TDFA
+
 
 data Runs = Runs {
     text :: String
@@ -78,3 +90,21 @@ data InitData = InitData {
 instance FromJSON InitData where
     parseJSON = withObject "InitData" $ \v -> InitData
         <$> v .: "contents"
+
+
+youtubeUrl :: String
+youtubeUrl = "https://www.youtube.com"
+
+initialDataRegex :: String
+initialDataRegex = "(var ytInitialData = )(.*);</script><script"
+
+getYouTubeInitialData :: BSL.ByteString -> BSL.ByteString
+getYouTubeInitialData rawBody =  getAllTextSubmatches (rawBody =~ initialDataRegex)!!2
+
+
+getSearchResults :: String -> IO (Response BSL.ByteString)
+getSearchResults search_query = do
+    manager <- newManager tlsManagerSettings
+    initReq <- parseRequest $ youtubeUrl <> "/results"
+    let req = setQueryString [("search_query", Just $ C8.pack search_query)] initReq
+    httpLbs req manager
