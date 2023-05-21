@@ -8,8 +8,37 @@ import Network.HTTP.Client
 import Data.Aeson
 
 
-import Youtube (InitContents, InitData, getSearchResults, getYouTubeInitialData)
+import Youtube (InitContents
+  , InitData
+  , getSearchResults
+  , getYouTubeInitialData
+  , getSearchResults
+  , getYouTubeInitialData
+  , runs
+  , title
+  , videoRenderer
+  , videoId
+  , isrContents
+  , slrContents
+  , initContents
+  , sectionListRenderer
+  , itemSectionRenderer
+  , text
+  , twoColumnSearchResultsRenderer
+  , primaryContents, VideoRenderer
+  )
+
+
 import Musicbrainz (Release, ArtistCredit, Track, aName, tTitle, rMedia, rArtistCredit, mTracks, getMusicBrainzResult)
+import Data.Maybe
+import GHC.IO.Device (IODevice(tell))
+
+data YoutuBrainzRes = YoutubeBrainzRes {
+  ybLevenshtein :: Float,
+  ybId :: String,
+  ybTitle :: String
+} deriving (Show)
+
 
 main :: IO ()
 main = do
@@ -20,11 +49,29 @@ main = do
     Just release -> do
         ytReslist <- getSearchResultsForEachQuery $ constructListOfYoutubeSearchQuery release
         let ytInitData = map (getYouTubeInitialData . responseBody) ytReslist
-        
-        let firstData = head ytInitData
-        let decodedYTInitData = map decode ytInitData :: [Maybe InitData]
-        mapM_ print decodedYTInitData
 
+        let maybeDecodedYTInitData = map decode ytInitData :: [Maybe InitData]
+        let decodeYTInitData = catMaybes maybeDecodedYTInitData
+        let isr = mapMaybe (itemSectionRenderer.
+                            head.
+                            slrContents.
+                            sectionListRenderer.
+                            primaryContents.
+                            twoColumnSearchResultsRenderer.
+                            initContents
+                            ) decodeYTInitData
+        let videoRenderList =  map (mapMaybe videoRenderer . isrContents) isr
+
+        let res = map toYoutubeBrainzRes videoRenderList
+        mapM_ (mapM_ print) res
+
+toYoutubeBrainzRes :: [VideoRenderer] -> [YoutuBrainzRes]
+toYoutubeBrainzRes = map (\el -> YoutubeBrainzRes {
+                                  ybLevenshtein = 0.0,
+                                  ybId=videoId el,
+                                  ybTitle= Youtube.text $ head $ runs $ title el
+                                }
+                          )
 
 getSearchResultsForEachQuery :: [String] -> IO [Response BSL.ByteString]
 getSearchResultsForEachQuery = mapM getSearchResults

@@ -12,6 +12,18 @@ module Youtube
     , InitData
     , getSearchResults
     , getYouTubeInitialData
+    , runs
+    , title
+    , text
+    , videoRenderer
+    , videoId
+    , isrContents
+    , slrContents
+    , initContents
+    , sectionListRenderer
+    , itemSectionRenderer
+    , twoColumnSearchResultsRenderer
+    , primaryContents
     )
     where
 
@@ -28,12 +40,12 @@ import Data.ByteString.Char8 as C8 (pack, ByteString)
 import Text.Regex.TDFA
 
 
-data Runs = Runs {
+newtype Runs = Runs {
     text :: String
 } deriving (Generic, Show)
 instance FromJSON Runs
 
-data Title = Title {
+newtype Title = Title {
     runs :: [Runs]
 } deriving (Generic, Show)
 instance FromJSON Title
@@ -84,7 +96,7 @@ newtype InitContents = InitContents {
 } deriving (Generic, Show)
 instance FromJSON InitContents
 
-data InitData = InitData {
+newtype InitData = InitData {
     initContents :: InitContents
 } deriving Show
 instance FromJSON InitData where
