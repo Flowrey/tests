@@ -38,6 +38,7 @@ import Debug.Trace (trace)
 import Data.Foldable (minimumBy)
 import Data.Ord
 import Control.Concurrent.Async
+import System.Environment (getArgs)
 
 data YoutuBrainzRes = YoutubeBrainzRes {
   ybLevenshtein :: Int,
@@ -48,7 +49,9 @@ data YoutuBrainzRes = YoutubeBrainzRes {
 
 main :: IO ()
 main = do
-  response <- getMusicBrainzResult "a17a48b6-51db-3c52-8fdd-066fb9989f78"
+  -- ex. "a17a48b6-51db-3c52-8fdd-066fb9989f78"
+  args <- getArgs
+  response <- getMusicBrainzResult $ head args
 
   case decode (responseBody response) :: Maybe Release of
     Nothing -> putStrLn "Unable to decoode body to JSON structure"
