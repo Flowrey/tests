@@ -35,12 +35,14 @@ import Musicbrainz (Release, ArtistCredit, Track, aName, tTitle, rMedia, rArtist
 import Data.Maybe
 import GHC.IO.Device (IODevice(tell))
 import Debug.Trace (trace)
+import Data.Foldable (minimumBy)
+import Data.Ord
 
 data YoutuBrainzRes = YoutubeBrainzRes {
   ybLevenshtein :: Int,
   ybId :: String,
   ybTitle :: String
-} deriving (Show)
+} deriving (Ord, Eq, Show)
 
 
 main :: IO ()
@@ -53,8 +55,7 @@ main = do
         ytReslist <- getSearchResultsForEachQuery $ constructListOfYoutubeSearchQuery release
         let ytInitData = map (getYouTubeInitialData . responseBody) ytReslist
 
-        let maybeDecodedYTInitData = map decode ytInitData :: [Maybe InitData]
-        let decodeYTInitData = catMaybes maybeDecodedYTInitData
+        let decodeYTInitData = map decode ytInitData :: [Maybe InitData]
         let isr = mapMaybe (itemSectionRenderer.
                             head.
                             slrContents.
@@ -62,12 +63,16 @@ main = do
                             primaryContents.
                             twoColumnSearchResultsRenderer.
                             initContents
-                            ) decodeYTInitData
+                            ) (catMaybes decodeYTInitData)
         let videoRenderList =  map (mapMaybe videoRenderer . isrContents) isr
 
         let params = zipWith (curry id) videoRenderList (mTracks $ head $ rMedia release)
-        let res = map toYoutubeBrainzRes params
-        mapM_ (mapM print) res
+        let allRes = map toYoutubeBrainzRes params
+        let bestRes = map getBestResults allRes
+        mapM_ print bestRes
+
+getBestResults :: [YoutuBrainzRes] -> YoutuBrainzRes
+getBestResults = minimumBy (comparing ybLevenshtein)
 
 toYoutubeBrainzRes :: ([VideoRenderer], Track) -> [YoutuBrainzRes]
 toYoutubeBrainzRes tel = map (\el -> YoutubeBrainzRes {
