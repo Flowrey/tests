@@ -1,0 +1,14 @@
+.App-coverart {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.cover {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  width: 250px;
+  margin: 15px;
+}

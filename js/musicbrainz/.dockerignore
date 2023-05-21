@@ -1,0 +1,9 @@
+# ignore .git folder
+.git
+
+# ignore all md files
+*.md
+
+# ignore build and node_modules
+static/build
+static/node_modules
