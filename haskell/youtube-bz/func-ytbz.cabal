@@ -39,6 +39,7 @@ executable func-ytbz
                       , lens-aeson
                       , lens
                       , array
+                      , async
                       
     hs-source-dirs:   app
     default-language: Haskell2010

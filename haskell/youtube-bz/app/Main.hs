@@ -37,6 +37,7 @@ import GHC.IO.Device (IODevice(tell))
 import Debug.Trace (trace)
 import Data.Foldable (minimumBy)
 import Data.Ord
+import Control.Concurrent.Async
 
 data YoutuBrainzRes = YoutubeBrainzRes {
   ybLevenshtein :: Int,
@@ -83,7 +84,7 @@ toYoutubeBrainzRes tel = map (\el -> YoutubeBrainzRes {
                           ) (fst tel)
 
 getSearchResultsForEachQuery :: [String] -> IO [Response BSL.ByteString]
-getSearchResultsForEachQuery = mapM getSearchResults
+getSearchResultsForEachQuery = mapConcurrently getSearchResults
 
 constructListOfYoutubeSearchQuery :: Release -> [String]
 constructListOfYoutubeSearchQuery release = map (constructYoutbeSearchQuery . head $ rArtistCredit release) (mTracks . head $ rMedia release)
