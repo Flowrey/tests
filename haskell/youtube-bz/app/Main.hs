@@ -1,4 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use tuple-section" #-}
 
 module Main where
 
@@ -28,13 +30,14 @@ import Youtube (InitContents
   , primaryContents, VideoRenderer
   )
 
-
+import Levenshtein (lev''')
 import Musicbrainz (Release, ArtistCredit, Track, aName, tTitle, rMedia, rArtistCredit, mTracks, getMusicBrainzResult)
 import Data.Maybe
 import GHC.IO.Device (IODevice(tell))
+import Debug.Trace (trace)
 
 data YoutuBrainzRes = YoutubeBrainzRes {
-  ybLevenshtein :: Float,
+  ybLevenshtein :: Int,
   ybId :: String,
   ybTitle :: String
 } deriving (Show)
@@ -62,16 +65,17 @@ main = do
                             ) decodeYTInitData
         let videoRenderList =  map (mapMaybe videoRenderer . isrContents) isr
 
-        let res = map toYoutubeBrainzRes videoRenderList
-        mapM_ (mapM_ print) res
+        let params = zipWith (curry id) videoRenderList (mTracks $ head $ rMedia release)
+        let res = map toYoutubeBrainzRes params
+        mapM_ (mapM print) res
 
-toYoutubeBrainzRes :: [VideoRenderer] -> [YoutuBrainzRes]
-toYoutubeBrainzRes = map (\el -> YoutubeBrainzRes {
-                                  ybLevenshtein = 0.0,
+toYoutubeBrainzRes :: ([VideoRenderer], Track) -> [YoutuBrainzRes]
+toYoutubeBrainzRes tel = map (\el -> YoutubeBrainzRes {
+                                  ybLevenshtein = lev''' (Youtube.text $ head $ runs $ title el) (tTitle $ snd tel),
                                   ybId=videoId el,
                                   ybTitle= Youtube.text $ head $ runs $ title el
                                 }
-                          )
+                          ) (fst tel)
 
 getSearchResultsForEachQuery :: [String] -> IO [Response BSL.ByteString]
 getSearchResultsForEachQuery = mapM getSearchResults
