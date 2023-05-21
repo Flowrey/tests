@@ -73,7 +73,10 @@ main = do
         let params = zipWith (curry id) videoRenderList (mTracks $ head $ rMedia release)
         let allRes = map toYoutubeBrainzRes params
         let bestRes = map getBestResults allRes
-        mapM_ print bestRes
+        mapM_ (putStrLn . toUrl) bestRes
+
+toUrl :: YoutuBrainzRes -> String
+toUrl res = "https://www.youtube.com/watch?v=" <>  ybId res
 
 getBestResults :: [YoutuBrainzRes] -> YoutuBrainzRes
 getBestResults = minimumBy (comparing ybLevenshtein)
