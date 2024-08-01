@@ -1,0 +1,4 @@
+(executable
+ (public_name get)
+ (name main)
+ (libraries get unix))
