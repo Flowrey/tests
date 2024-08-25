@@ -1,0 +1,6 @@
+(melange.emit
+ (target output)
+ (libraries melange.dom)
+ (preprocess
+  (pps melange.ppx))
+ (module_systems es6))

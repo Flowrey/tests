@@ -1,0 +1,46 @@
+#root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.unit-block {
+  border: solid black 1px;
+  margin: 5px 5px;
+}
+
+.unit-block.parent {
+  display: flex;
+  flex-direction: row;
+  border: solid black 1px;
+}
+
+.teaching-unit button {
+  width: 140px;
+  background-color: #c5c5c5;
+  color: black;
+  border: 2px solid #c5c5c5;
+  border-radius: 3px;
+  padding: 15px 32px;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 5px 5px;
+}
+
+.teaching-unit.selected button {
+  border: 2px solid #045faa;
+  background-color: #045faa;
+  color: white;
+}
+
+.teaching-unit.validated button {
+  border: 2px solid #04AA6D;
+  background-color: #04AA6D;
+  color: white;
+}
+
+.teaching-unit button:hover {
+  background-color: white;
+  color: black;
+}
